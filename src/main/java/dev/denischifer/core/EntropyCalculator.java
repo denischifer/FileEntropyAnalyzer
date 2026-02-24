@@ -1,4 +1,7 @@
 package dev.denischifer.core;
 
-public class EntropyCalculator {
+import dev.denischifer.math.ProbabilityModel;
+
+public interface EntropyCalculator {
+    double calculate(ProbabilityModel<?> model);
 }

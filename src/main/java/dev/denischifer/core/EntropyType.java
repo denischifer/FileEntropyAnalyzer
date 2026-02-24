@@ -1,4 +1,5 @@
 package dev.denischifer.core;
 
-public class EntropyType {
+public enum EntropyType {
+    SHANNON, BLOCK, SLIDING_WINDOW, CONDITIONAL, MIN_ENTROPY
 }
