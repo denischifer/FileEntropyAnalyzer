@@ -1,14 +1,17 @@
 package dev.denischifer.concurrency;
 
 import dev.denischifer.io.FileReaderService;
+import dev.denischifer.math.ByteSequence;
 import dev.denischifer.math.ProbabilityModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.util.Random;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EngineConcurrencyTest {
 
@@ -25,20 +28,22 @@ class EngineConcurrencyTest {
         }
 
         FileReaderService reader = new FileReaderService(file.getAbsolutePath());
+        int nGramSize = 1;
 
         EngineConfig singleConfig = EngineConfig.builder()
                 .threadCount(1).chunkSize(1024).queueCapacity(10).build();
         ExecutionEngine singleEngine = new ExecutionEngine(reader, singleConfig);
-        ProbabilityModel<Integer> singleModel = singleEngine.execute(file.length());
+        ProbabilityModel<ByteSequence> singleModel = singleEngine.execute(file.length(), nGramSize);
 
         EngineConfig multiConfig = EngineConfig.builder()
                 .threadCount(8).chunkSize(1024).queueCapacity(10).build();
         ExecutionEngine multiEngine = new ExecutionEngine(reader, multiConfig);
-        ProbabilityModel<Integer> multiModel = multiEngine.execute(file.length());
+        ProbabilityModel<ByteSequence> multiModel = multiEngine.execute(file.length(), nGramSize);
 
         assertEquals(singleModel.getTotalCount(), multiModel.getTotalCount());
-        for (int i = 0; i < 256; i++) {
-            assertEquals(singleModel.getFrequencies().get(i), multiModel.getFrequencies().get(i));
-        }
+
+        singleModel.getFrequencies().forEach((key, value) -> {
+            assertEquals(value, multiModel.getFrequencies().get(key));
+        });
     }
 }

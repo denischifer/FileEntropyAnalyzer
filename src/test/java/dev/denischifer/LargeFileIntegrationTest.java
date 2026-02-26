@@ -1,16 +1,20 @@
 package dev.denischifer;
 
+import dev.denischifer.algorithms.ShannonEntropy;
 import dev.denischifer.concurrency.EngineConfig;
 import dev.denischifer.concurrency.ExecutionEngine;
 import dev.denischifer.io.FileReaderService;
+import dev.denischifer.math.ByteSequence;
 import dev.denischifer.math.ProbabilityModel;
-import dev.denischifer.algorithms.ShannonEntropy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LargeFileIntegrationTest {
 
@@ -37,7 +41,8 @@ class LargeFileIntegrationTest {
                 .build();
 
         ExecutionEngine engine = new ExecutionEngine(reader, config);
-        ProbabilityModel<Integer> model = engine.execute(file.length());
+        int nGramSize = 1;
+        ProbabilityModel<ByteSequence> model = engine.execute(file.length(), nGramSize);
 
         assertEquals(size, model.getTotalCount());
 
@@ -45,7 +50,11 @@ class LargeFileIntegrationTest {
         double entropy = shannon.calculate(model);
 
         assertTrue(entropy >= 0 && entropy <= 8);
-        assertTrue(model.getFrequencies().containsKey((int) 'S'));
-        assertTrue(model.getFrequencies().containsKey((int) 'D'));
+
+        ByteSequence startChar = new ByteSequence(new byte[]{(byte) 'S'});
+        ByteSequence endChar = new ByteSequence(new byte[]{(byte) 'D'});
+
+        assertTrue(model.getFrequencies().containsKey(startChar));
+        assertTrue(model.getFrequencies().containsKey(endChar));
     }
 }
